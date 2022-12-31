@@ -21,7 +21,7 @@ const Tour = require('./../models/tourModel');
 
 //Route Handlers
 exports.getAllTours = async (req, res) => {
-    try{
+    try {
         const tours = await Tour.find();
         res.status(200).json({
             status: 'success',
@@ -39,7 +39,7 @@ exports.getAllTours = async (req, res) => {
 }
 
 exports.getTour = async (req, res) => {
-    try{
+    try {
         const tour = await Tour.findById(req.params.id);
         //Tour.findOne({ _id: req.params.id })
 
@@ -58,7 +58,7 @@ exports.getTour = async (req, res) => {
 };
 
 exports.createTour = async (req, res) => {
-    try{
+    try {
         const newTour = await Tour.create(req.body);
         res.status(201).json({
             status: "success",
@@ -74,13 +74,21 @@ exports.createTour = async (req, res) => {
     }
 };
 
-exports.changeTour = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour: "<Updating...>"
-        }
-    })
+exports.changeTour = async (req, res) => {
+    try {
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        })
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    } catch (err) {
+
+    }
 };
 
 exports.deleteTour = (req, res) => {
