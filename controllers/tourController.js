@@ -22,7 +22,36 @@ const Tour = require('./../models/tourModel');
 //Route Handlers
 exports.getAllTours = async (req, res) => {
     try {
-        const tours = await Tour.find();
+        //Filtering
+        const queryObj = { ...req.query };
+        const excludedFields = ['page', 'sort', 'limit', 'fields'];
+        excludedFields.forEach(el => delete queryObj[el]);
+
+        let queryString = JSON.stringify(queryObj);
+        queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+        console.log(JSON.parse(queryString));
+
+        let query = Tour.find(JSON.parse(queryString));
+
+        //Sorting
+        if (req.query.sort) {
+            //use the comma to separate the sorting rule(variables), but need to replace it with space
+            const sortBy = req.query.sort.split(',').join(' ');
+            query = query.sort(sortBy);
+        } else {
+            //if there is no sorting, sort with the descending order of time stamp
+            query = query.sort('-createdAt');
+        }
+
+        //Execute query
+        const tours = await query;
+        // const query = await Tour.find()
+        //     .where('duration')
+        //     .equals(5)
+        //     .where('difficulty')
+        //     .equals('easy')
+
+        //Send response
         res.status(200).json({
             status: 'success',
             results: tours.length,
