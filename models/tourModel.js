@@ -82,6 +82,12 @@ tourSchema.pre(/^find/, function(next) {
     next();
 })
 
+//Aggregation middleware
+tourSchema.pre('aggregate', function(next) {
+    this.pipeline().unshift({ $match: { secretTour: {$ne: true} } });
+    console.log(this.pipeline());
+    next();
+})
 
 //calculate the time to do the query
 tourSchema.post(/^find/, function(docs, next) {
