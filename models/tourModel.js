@@ -52,8 +52,16 @@ const tourSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
-    startDates: [Date]
-});
+    startDates: [Date],
+    secretTour: {
+        type: Boolean,
+        default: false
+    }},
+    {
+        toJSON: {virtuals: true},
+        toObject: {virtuals: true}
+    }
+);
 
 //Virtual properties
 tourSchema.virtual('durationWeeks').get(function() {
@@ -66,6 +74,21 @@ tourSchema.pre('save', function(next) {
     next();
 })
 //tourSchema.post()
+
+//Query middleware, the method starting with "find", like findOne
+tourSchema.pre(/^find/, function(next) {
+    this.find({secretTour: {$ne: true}});
+    this.start = Date.now();
+    next();
+})
+
+
+//calculate the time to do the query
+tourSchema.post(/^find/, function(docs, next) {
+    console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+    console.log(docs);
+    next();
+})
 
 const Tour = mongoose.model('Tour', tourSchema);
 
