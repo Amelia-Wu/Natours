@@ -1,3 +1,4 @@
+const { promisify } = require('util');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const jwt = require('jsonwebtoken');
@@ -55,4 +56,36 @@ exports.login = catchAsync(async (req, res, next) => {
         status: 'success',
         token
     })
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+    // 1) Getting the token and check if it's there (token format: Bearer dfghdfghsfgh)
+    //In postman, set the Headers as Key: Authorization, Value: Bearer dfghdfghsfgh
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+        return next(new AppError('You are not logged in! Please log in to get access.', 401));
+    }
+
+    // 2) Verify the token with jwt.verify and get the decoded payload
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    console.log(decoded);
+
+    // 3) Check if the user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+        return next(new AppError('The user belonging to this token does not exist.', 401));
+    }
+
+    // 4) Check if the user changed password after the token was issued
+    if (currentUser.changedPasswordAfter) {
+        return next(new AppError('User recently changed password. Please log in again.', 401));
+    }
+
+    //Grant access to protected route
+    req.user = currentUser;
+    next();
 });

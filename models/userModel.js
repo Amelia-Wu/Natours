@@ -30,7 +30,8 @@ const userSchema = new mongoose.Schema({
                 return el === this.password;
             }
         }
-    }
+    },
+    passwordChangedAt: Date
 });
 
 userSchema.pre('save', async function(next) {
@@ -50,6 +51,18 @@ userSchema.pre('save', async function(next) {
 //Need to use bcrypt because the candidatePassword is not encrypted
 userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword)
+}
+
+//Check if the user changed password after using the token
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+    if (this.passwordChangedAt) {
+        const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+        //If the changed time is larger than the JWT time, the password has been changed
+        return JWTTimestamp < changedTimestamp;
+    }
+
+    //False means the password is not changed
+    return false;
 }
 
 const User = mongoose.model('User', userSchema);

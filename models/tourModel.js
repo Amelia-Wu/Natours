@@ -98,7 +98,6 @@ tourSchema.pre('aggregate', function(next) {
 //calculate the time to do the query
 tourSchema.post(/^find/, function(docs, next) {
     console.log(`Query took ${Date.now() - this.start} milliseconds!`);
-    console.log(docs);
     next();
 })
 
