@@ -81,11 +81,22 @@ exports.protect = catchAsync(async (req, res, next) => {
     }
 
     // 4) Check if the user changed password after the token was issued
-    if (currentUser.changedPasswordAfter) {
-        return next(new AppError('User recently changed password. Please log in again.', 401));
-    }
+    // if (currentUser.changedPasswordAfter) {
+    //     return next(new AppError('User recently changed password. Please log in again.', 401));
+    // }
 
-    //Grant access to protected route
+    //Grant access to protected route, IMPORTANT TO STORE THE USER INFORMATION
     req.user = currentUser;
     next();
 });
+
+exports.restrictTo = (...roles) => {
+    return(req, res, next) => {
+        //roles: admin, lead-guide
+        //THE USER INFORMATION IS IN req.user
+        if(!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action', 403))
+        }
+        next();
+    }
+}
