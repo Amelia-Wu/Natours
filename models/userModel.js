@@ -54,6 +54,14 @@ userSchema.pre('save', async function(next) {
     next();
 });
 
+userSchema.pre('save', async function(next) {
+    if (!this.isModified('password' || this.isNew)) return next();
+
+    //make the passwordChangedAt one second before now, making sure the token is always used after the change of password
+    this.passwordChangedAt = Date.now() - 1000;
+    next();
+});
+
 //This is an instance method, which is available in all the documents
 //Use bcrypt to compare if the stored password is the same as the input password(candidatePassword)
 //Need to use bcrypt because the candidatePassword is not encrypted
