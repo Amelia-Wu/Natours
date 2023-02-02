@@ -59,6 +59,10 @@ const tourSchema = new mongoose.Schema({
         default: Date.now()
     },
     startDates: [Date],
+    secretTour: {
+        type: Boolean,
+        default: false
+    },
     startLocation: {
         //GeoJSON
         type: {
@@ -84,13 +88,17 @@ const tourSchema = new mongoose.Schema({
             day: Number
         }
     ],
-    secretTour: {
-        type: Boolean,
-        default: false
-    }},
+    //Step 1: make a reference of the other table
+    guides: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User'
+        }
+    ]
+},
     {
-        toJSON: {virtuals: true},
-        toObject: {virtuals: true}
+    toJSON: {virtuals: true},
+    toObject: {virtuals: true}
     }
 );
 
@@ -117,6 +125,15 @@ tourSchema.pre(/^find/, function(next) {
 tourSchema.pre('aggregate', function(next) {
     this.pipeline().unshift({ $match: { secretTour: {$ne: true} } });
     console.log(this.pipeline());
+    next();
+})
+
+//Step2: populate the table with the field
+tourSchema.pre(/^find/, function(next) {
+    this.populate({
+        path: 'guides',
+        select: '-__v -passwordChangedAt'
+    })
     next();
 })
 
