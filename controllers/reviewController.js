@@ -1,7 +1,7 @@
 const Review = require('./../models/reviewModel');
 const catchAsync = require('./../utils/catchAsync');
 
-exports.getAllReviews = catchAsync(async (req, res) => {
+exports.getAllReviews = catchAsync(async (req, res, next) => {
     const reviews = await Review.find();
 
     res.status(200).json({
@@ -13,7 +13,12 @@ exports.getAllReviews = catchAsync(async (req, res) => {
     })
 })
 
-exports.createReview = catchAsync(async(req, res) => {
+exports.createReview = catchAsync(async(req, res, next) => {
+    //Allow nested routes: users can still manually set the tour and user ID
+    //the tourId can be found in the url (req.params)
+    if(!req.body.tour) req.body.tour = req.params.tourId;
+    if(!req.body.user) req.body.user = req.user.id;
+
     const newReview = await Review.create(req.body);
 
     res.status(201).json({
