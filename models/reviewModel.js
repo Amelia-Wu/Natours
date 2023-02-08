@@ -33,9 +33,6 @@ const reviewSchema = new mongoose.Schema({
 //populate the two fields that need reference
 reviewSchema.pre(/^find/, function(next) {
     this.populate({
-        path: 'tour',
-        select: 'name'
-    }).populate({
         path: 'user',
         select: 'name photo'
     })
