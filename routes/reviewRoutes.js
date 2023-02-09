@@ -2,7 +2,8 @@ const express = require('express');
 const reviewController = require('./../controllers/reviewController');
 const authController = require('./../controllers/authController');
 
-const router = express.Router();
+//Merge the parameters so that tourId can be accessed
+const router = express.Router({ mergeParams: true });
 
 //Restriction: only users can write reviews
 router.route('/')
