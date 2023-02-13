@@ -1,6 +1,10 @@
 const express = require("express");
+const multer = require("multer");
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+
+//Upload images into a file system and in the database we put a link to the image
+const upload = multer({ dest: 'public/img/users' })
 
 const router = express.Router();
 
@@ -9,10 +13,14 @@ router.post('/login', authController.login);
 
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
-router.patch('/updateMyPassword', authController.protect, authController.updatePassword);
 
-router.patch('/updateMe', authController.protect, userController.updateMe);
-router.delete('/deleteMe', authController.protect, userController.deleteMe);
+//Protect all routes after this middleware
+router.use(authController.protect);
+
+router.patch('/updateMyPassword', authController.updatePassword);
+//Upload a single image in this route
+router.patch('/updateMe', upload.single('photo'), userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
 
 router
     .route('/')
